@@ -296,3 +296,14 @@ var diff, diffXY, integral, integralXY, extrema, extremaXY;
         return arr;
     }
 }());
+
+if(module && module.exports) {
+    module.exports = {
+        diff: diff,
+        diffXY: diffXY,
+        integral: integral,
+        integralXY: integralXY,
+        extrema: extrema,
+        extremaXY: extremaXY
+    };
+}
