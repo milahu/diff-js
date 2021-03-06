@@ -1,6 +1,3 @@
-var diff, diffXY, integral, integralXY, extrema, extremaXY;
-
-(function() {
     /**
      * Calculate differences of a vector.
      *
@@ -23,7 +20,7 @@ var diff, diffXY, integral, integralXY, extrema, extremaXY;
      * @param n
      * @returns Array
      */
-    diff = function(values, n) {
+    export function diff(values, n) {
         // make y enumerated and define x = 1, 2, 3, ...
         var x, y;
         y = enumerate(values);
@@ -52,7 +49,7 @@ var diff, diffXY, integral, integralXY, extrema, extremaXY;
      * @param n
      * @returns Array
      */
-    diffXY = function(x, y, n) {
+    export function diffXY(x, y, n) {
         // recursive calls to get n-th diff
         if(n > 1) {
             y = diffXY(x, y, n-1);
@@ -96,7 +93,7 @@ var diff, diffXY, integral, integralXY, extrema, extremaXY;
      * @param n
      * @returns Array
      */
-    integral = function(values, n) {
+    export function integral(values, n) {
         // make y enumerated and define x = 1, 2, 3, ...
         var x, y;
         y = enumerate(values);
@@ -134,7 +131,7 @@ var diff, diffXY, integral, integralXY, extrema, extremaXY;
      * @param n
      * @returns Array
      */
-    integralXY = function(x, y, n) {
+    export function integralXY(x, y, n) {
         // recursive calls to get n-th diff
         if(n > 1) {
             y = integral(x, y, n-1);
@@ -178,7 +175,7 @@ var diff, diffXY, integral, integralXY, extrema, extremaXY;
      * @param eps
      * @returns {minlist: Array, maxlist: Array}
      */
-    extrema = function(values, eps) {
+    export function extrema(values, eps) {
         // make y enumerated and define x = 1, 2, 3, ...
         var x, y;
         y = enumerate(values);
@@ -209,7 +206,7 @@ var diff, diffXY, integral, integralXY, extrema, extremaXY;
      * @param eps
      * @returns {minlist: Array, maxlist: Array}
      */
-    extremaXY = function(x, y, eps) {
+    export function extremaXY(x, y, eps) {
         // declare local vars
         var n, s, m, M, maxlist, minlist, i, j;
         // define x & y enumerated arrays
@@ -287,7 +284,7 @@ var diff, diffXY, integral, integralXY, extrema, extremaXY;
     }
 
     // helper to make an array or object an enumerated array
-    var enumerate = function(obj) {
+    function enumerate(obj) {
         var arr = [];
         var keys = Object.keys(obj);
         for (var k = 0; k < keys.length; k++) {
@@ -295,15 +292,3 @@ var diff, diffXY, integral, integralXY, extrema, extremaXY;
         }
         return arr;
     }
-}());
-
-if(module && module.exports) {
-    module.exports = {
-        diff: diff,
-        diffXY: diffXY,
-        integral: integral,
-        integralXY: integralXY,
-        extrema: extrema,
-        extremaXY: extremaXY
-    };
-}
