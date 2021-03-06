@@ -1,3 +1,8 @@
+// https://github.com/balint42/diff.js
+// differentiation, integration, find local minima and maxima
+
+const getArray = object => Array.isArray(object) ? object : Object.values(object);
+
 /**
  * Calculate differences of a vector.
  *
@@ -21,12 +26,12 @@
  * @returns Array
  */
 export function diff(values, n) {
-  // make y enumerated and define x = 1, 2, 3, ...
-  var x, y;
-  y = enumerate(values);
-  x = Object.keys(y).map(Math.floor);
+  // make yVector enumerated and define xVector = 1, 2, 3, ...
+  var xVector, yVector;
+  yVector = getArray(values);
+  xVector = Object.keys(yVector).map(Math.floor);
   // call diffXY version
-  return diffXY(x, y, n);
+  return diffXY(xVector, yVector, n);
 }
 
 /**
@@ -44,28 +49,28 @@ export function diff(values, n) {
  *
  * @author Balint Morvai <balint@morvai.de>
  * @license http://en.wikipedia.org/wiki/MIT_License MIT License
- * @param x
- * @param y
+ * @param xVector
+ * @param yVector
  * @param n
  * @returns Array
  */
-export function diffXY(x, y, n) {
+export function diffXY(xVector, yVector, n) {
   // recursive calls to get n-th diff
   if(n > 1) {
-    y = diffXY(x, y, n-1);
-    x.pop();
+    yVector = diffXY(xVector, yVector, n-1);
+    xVector.pop();
   }
   // loop through 1,...,m-1 entries of values to get diff
-  var keysX = Object.keys(x);
-  var keysY = Object.keys(y);
+  var keysX = Object.keys(xVector);
+  var keysY = Object.keys(yVector);
   var len = Math.min(keysX.length-1, keysY.length-1);
   for (var k = 0; k < len; k++) {
-    y[k] = (y[keysY[k+1]]-y[keysY[k]]) /
-         (x[keysX[k+1]]-x[keysX[k]]);
+    yVector[k] = (yVector[keysY[k+1]]-yVector[keysY[k]]) /
+         (xVector[keysX[k+1]]-xVector[keysX[k]]);
   }
-  y.pop(); // last element is old value, delete it
+  yVector.pop(); // last element is old value, delete it
 
-  return y;
+  return yVector;
 }
 
 /**
@@ -94,12 +99,12 @@ export function diffXY(x, y, n) {
  * @returns Array
  */
 export function integral(values, n) {
-  // make y enumerated and define x = 1, 2, 3, ...
-  var x, y;
-  y = enumerate(values);
-  x = Object.keys(y).map(Math.floor);
+  // make yVector enumerated and define xVector = 1, 2, 3, ...
+  var xVector, yVector;
+  yVector = getArray(values);
+  xVector = Object.keys(yVector).map(Math.floor);
   // call integralXY version
-  return integralXY(x, y, n);
+  return integralXY(xVector, yVector, n);
 }
 
 /**
@@ -126,28 +131,28 @@ export function integral(values, n) {
  *
  * @author Balint Morvai <balint@morvai.de>
  * @license http://en.wikipedia.org/wiki/MIT_License MIT License
- * @param x
- * @param y
+ * @param xVector
+ * @param yVector
  * @param n
  * @returns Array
  */
-export function integralXY(x, y, n) {
+export function integralXY(xVector, yVector, n) {
   // recursive calls to get n-th diff
   if(n > 1) {
-    y = integral(x, y, n-1);
+    yVector = integral(xVector, yVector, n-1);
   }
   // loop through m,...,1 entries of values to get integral
-  var keysX = Object.keys(x);
-  var keysY = Object.keys(y);
+  var keysX = Object.keys(xVector);
+  var keysY = Object.keys(yVector);
   var len = Math.min(keysX.length-1, keysY.length-1);
   // NOTE: below we would need X(len+1) & Y(len+1) but both are missing;
   // thus we assume "X(len+1)-X(len)=X(len)-X(len-1)" and "Y(len+1)=0"
-  y[len] = -y[len]*(x[keysX[len]]-x[keysX[len-1]]);
+  yVector[len] = -yVector[len]*(xVector[keysX[len]]-xVector[keysX[len-1]]);
   for (var k = len-1; k >= 0; k--) {
-    y[k] = -y[keysY[k]]*(x[keysX[k+1]]-x[keysX[k]])+y[keysY[k+1]];
+    yVector[k] = -yVector[keysY[k]]*(xVector[keysX[k+1]]-xVector[keysX[k]])+yVector[keysY[k+1]];
   }
 
-  return y;
+  return yVector;
 }
 
 /**
@@ -163,7 +168,7 @@ export function integralXY(x, y, n) {
  * with two lists of indices: 'minlist' with indices of values
  * that are local minima and 'maxlist' with indices of values that
  * are local maxima. Indices can be of any type.
- * Takes numbers as first parameter and an accuracy > 0 (epsilon)
+ * Takes numbers as first parameter and an accuracy > 0 (tolerance)
  * as second parameter. The accuracy has to be chosen depending
  * on the fluctuations in the data: smaller values mean greater
  * reliability in finding extrema but also greater chance of
@@ -172,16 +177,16 @@ export function integralXY(x, y, n) {
  * @author Balint Morvai <balint@morvai.de>
  * @license http://en.wikipedia.org/wiki/MIT_License MIT License
  * @param values
- * @param eps
+ * @param tolerance
  * @returns {minlist: Array, maxlist: Array}
  */
-export function extrema(values, eps) {
-  // make y enumerated and define x = 1, 2, 3, ...
-  var x, y;
-  y = enumerate(values);
-  x = Object.keys(y).map(Math.floor);
+export function extrema(values, tolerance) {
+  // make yVector enumerated and define xVector = 1, 2, 3, ...
+  var xVector, yVector;
+  yVector = getArray(values);
+  xVector = Object.keys(yVector).map(Math.floor);
   // call extremaXY version
-  var res = extremaXY(x, y, eps);
+  var res = extremaXY(xVector, yVector, tolerance);
   res.minlist = res.minlist.map(function(val) {
     var index = Math.floor((val[1] + val[0]) / 2);
     return Object.keys(values)[index];
@@ -201,94 +206,78 @@ export function extrema(values, eps) {
  *
  * @author Balint Morvai <balint@morvai.de>
  * @license http://en.wikipedia.org/wiki/MIT_License MIT License
- * @param x
- * @param y
- * @param eps
+ * @param xVector
+ * @param yVector
+ * @param tolerance
  * @returns {minlist: Array, maxlist: Array}
  */
-export function extremaXY(x, y, eps) {
-  // declare local vars
-  var n, s, m, M, maxlist, minlist, i, j;
-  // define x & y enumerated arrays
-  var enumerate = function(obj) {
-    var arr = [];
-    var keys = Object.keys(obj);
-    for (var k = 0; k < keys.length; k++) {
-      arr[k] = obj[keys[k]];
-    }
-    return arr;
+export function extremaXY(xVector, yVector, tolerance = 0.1) {
+  xVector = getArray(xVector);
+  yVector = getArray(yVector);
+  if (xVector.length < 2) return { minlist: [], maxlist: [] };
+  let lastSlope = 0; // -1: falling, +1: rising
+  // TODO 0: horizontal (plateau)
+  const maxlist = [];
+  const minlist = [];
+  let lastMin = yVector[0];
+  let lastMax = yVector[0];
+  let lastY = yVector[0];
+  let y = yVector[1];
+
+  // init
+  if (y < (lastMax - tolerance)) {
+    // falling
+    lastSlope = -1;
+    lastMin = y;
   }
-  y = enumerate(y);
-  x = enumerate(x);
-  // set initial values
-  n = y.length;
-  s = 0;
-  m = y[0];
-  M = y[0];
-  maxlist = [];
-  minlist = [];
-  i = 1;
-  if (typeof eps == "undefined") {
-    eps = 0.1;
+  else if (y > (lastMin + tolerance)) {
+    // rising
+    lastSlope = 1;
+    lastMax = y;
   }
-  // the algorithm
-  while (i < n) {
-    if (s == 0) {
-      if (!(M - eps <= y[i] && y[i] <= m + eps)) {
-        if (M - eps > y[i]) {
-          s = -1;
-        }
-        if (m + eps < y[i]) {
-          s = 1;
-        }
-      }
-      M = Math.max(M, y[i]);
-      m = Math.min(m, y[i]);
-    }
-    else {
-      if (s == 1) {
-        if (M - eps <= y[i]) {
-          M = Math.max(M, y[i]);
-        }
-        else {
-          j = i - 1;
-          while(y[j] >= M - eps) {
-            j--;
-          }
-          maxlist.push( [x[j], x[i]] );
-          s = -1;
-          m = y[i];
-        }
+
+  for (let i = 2; i < yVector.length; i++) {
+    y = yVector[i];
+    if (lastSlope == 1) {
+      // was rising
+      if (y >= lastMax - tolerance) {
+        // still rising
+        lastMax = y;
       }
       else {
-        if(s == -1) {
-          if(m + eps >= y[i]) {
-            m = Math.min(m, y[i]);
-          }
-          else {
-            j = i - 1;
-            while(y[j] <= m + eps) {
-              j--;
-            }
-            minlist.push( [x[j], x[i]] );
-            s = 1;
-            M = y[i];
-          }
+        // stopped rising
+        maxlist.push( [xVector[i - 1], xVector[i]] );
+        // find x interval of last maximum
+        let iStart = i - 1;
+        while (yVector[iStart] >= lastMax - tolerance) {
+          iStart--;
         }
+        maxlist.push([xVector[iStart], xVector[i]]);
+        // falling
+        lastSlope = -1;
+        lastMin = y;
       }
     }
-    i++;
+    else if (lastSlope == -1) {
+      // was falling
+      if(y <= lastMin + tolerance) {
+        // still falling
+        lastMin = y;
+      }
+      else {
+        // stopped falling
+        // find x interval of last minimum
+        let iStart = i - 1;
+        while (yVector[iStart] <= lastMin + tolerance) {
+          iStart--;
+        }
+        minlist.push([xVector[iStart], xVector[i]]);
+        // rising
+        lastSlope = 1;
+        lastMax = y;
+      }
+    }
+    // else ? (plateau)
   }
-
-  return {minlist: minlist, maxlist: maxlist};
-}
-
-// helper to make an array or object an enumerated array
-function enumerate(obj) {
-  var arr = [];
-  var keys = Object.keys(obj);
-  for (var k = 0; k < keys.length; k++) {
-    arr[k] = obj[keys[k]];
-  }
-  return arr;
+  return { minlist, maxlist };
 }
