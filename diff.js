@@ -1,6 +1,10 @@
 // https://github.com/balint42/diff.js
 // differentiation, integration, find local minima and maxima
 
+// similar project:
+// https://github.com/efekarakus/d3-peaks
+// will only find local maxima (peaks)
+
 const getArray = object => Array.isArray(object) ? object : Object.values(object);
 
 /**
@@ -26,12 +30,12 @@ const getArray = object => Array.isArray(object) ? object : Object.values(object
  * @returns Array
  */
 export function diff(values, n) {
-  // make yVector enumerated and define xVector = 1, 2, 3, ...
-  var xVector, yVector;
-  yVector = getArray(values);
-  xVector = Object.keys(yVector).map(Math.floor);
+  // make yArray enumerated and define xArray = 1, 2, 3, ...
+  var xArray, yArray;
+  yArray = getArray(values);
+  xArray = Object.keys(yArray).map(Math.floor);
   // call diffXY version
-  return diffXY(xVector, yVector, n);
+  return diffXY(xArray, yArray, n);
 }
 
 /**
@@ -49,28 +53,28 @@ export function diff(values, n) {
  *
  * @author Balint Morvai <balint@morvai.de>
  * @license http://en.wikipedia.org/wiki/MIT_License MIT License
- * @param xVector
- * @param yVector
+ * @param xArray
+ * @param yArray
  * @param n
  * @returns Array
  */
-export function diffXY(xVector, yVector, n) {
+export function diffXY(xArray, yArray, n) {
   // recursive calls to get n-th diff
   if(n > 1) {
-    yVector = diffXY(xVector, yVector, n-1);
-    xVector.pop();
+    yArray = diffXY(xArray, yArray, n-1);
+    xArray.pop();
   }
   // loop through 1,...,m-1 entries of values to get diff
-  var keysX = Object.keys(xVector);
-  var keysY = Object.keys(yVector);
+  var keysX = Object.keys(xArray);
+  var keysY = Object.keys(yArray);
   var len = Math.min(keysX.length-1, keysY.length-1);
   for (var k = 0; k < len; k++) {
-    yVector[k] = (yVector[keysY[k+1]]-yVector[keysY[k]]) /
-         (xVector[keysX[k+1]]-xVector[keysX[k]]);
+    yArray[k] = (yArray[keysY[k+1]]-yArray[keysY[k]]) /
+         (xArray[keysX[k+1]]-xArray[keysX[k]]);
   }
-  yVector.pop(); // last element is old value, delete it
+  yArray.pop(); // last element is old value, delete it
 
-  return yVector;
+  return yArray;
 }
 
 /**
@@ -99,12 +103,12 @@ export function diffXY(xVector, yVector, n) {
  * @returns Array
  */
 export function integral(values, n) {
-  // make yVector enumerated and define xVector = 1, 2, 3, ...
-  var xVector, yVector;
-  yVector = getArray(values);
-  xVector = Object.keys(yVector).map(Math.floor);
+  // make yArray enumerated and define xArray = 1, 2, 3, ...
+  var xArray, yArray;
+  yArray = getArray(values);
+  xArray = Object.keys(yArray).map(Math.floor);
   // call integralXY version
-  return integralXY(xVector, yVector, n);
+  return integralXY(xArray, yArray, n);
 }
 
 /**
@@ -131,28 +135,28 @@ export function integral(values, n) {
  *
  * @author Balint Morvai <balint@morvai.de>
  * @license http://en.wikipedia.org/wiki/MIT_License MIT License
- * @param xVector
- * @param yVector
+ * @param xArray
+ * @param yArray
  * @param n
  * @returns Array
  */
-export function integralXY(xVector, yVector, n) {
+export function integralXY(xArray, yArray, n) {
   // recursive calls to get n-th diff
   if(n > 1) {
-    yVector = integral(xVector, yVector, n-1);
+    yArray = integral(xArray, yArray, n-1);
   }
   // loop through m,...,1 entries of values to get integral
-  var keysX = Object.keys(xVector);
-  var keysY = Object.keys(yVector);
+  var keysX = Object.keys(xArray);
+  var keysY = Object.keys(yArray);
   var len = Math.min(keysX.length-1, keysY.length-1);
   // NOTE: below we would need X(len+1) & Y(len+1) but both are missing;
   // thus we assume "X(len+1)-X(len)=X(len)-X(len-1)" and "Y(len+1)=0"
-  yVector[len] = -yVector[len]*(xVector[keysX[len]]-xVector[keysX[len-1]]);
+  yArray[len] = -yArray[len]*(xArray[keysX[len]]-xArray[keysX[len-1]]);
   for (var k = len-1; k >= 0; k--) {
-    yVector[k] = -yVector[keysY[k]]*(xVector[keysX[k+1]]-xVector[keysX[k]])+yVector[keysY[k+1]];
+    yArray[k] = -yArray[keysY[k]]*(xArray[keysX[k+1]]-xArray[keysX[k]])+yArray[keysY[k+1]];
   }
 
-  return yVector;
+  return yArray;
 }
 
 /**
@@ -165,10 +169,10 @@ export function integralXY(xVector, yVector, n) {
  * (Interval Computations 01/1993; 1993(4))
  *
  * Takes an object or array with numbers and returns an object
- * with two lists of indices: 'minlist' with indices of values
+ * with two lists of indices: 'minima' with indices of values
  * that are local minima and 'maxlist' with indices of values that
  * are local maxima. Indices can be of any type.
- * Takes numbers as first parameter and an accuracy > 0 (tolerance)
+ * Takes numbers as first parameter and an accuracy > 0 (yTolerance)
  * as second parameter. The accuracy has to be chosen depending
  * on the fluctuations in the data: smaller values mean greater
  * reliability in finding extrema but also greater chance of
@@ -177,26 +181,23 @@ export function integralXY(xVector, yVector, n) {
  * @author Balint Morvai <balint@morvai.de>
  * @license http://en.wikipedia.org/wiki/MIT_License MIT License
  * @param values
- * @param tolerance
- * @returns {minlist: Array, maxlist: Array}
+ * @param yTolerance
+ * @returns { minima: Array, maxima: Array }
  */
-export function extrema(values, tolerance) {
-  // make yVector enumerated and define xVector = 1, 2, 3, ...
-  var xVector, yVector;
-  yVector = getArray(values);
-  xVector = Object.keys(yVector).map(Math.floor);
+export function extrema(values, yTolerance) {
+  // make yArray enumerated and define xArray = 1, 2, 3, ...
+  const valuesKeys = Object.keys(values);
+  const xArray = Array.from({ length: valuesKeys.length }).map((_, i) => i);
+  const yArray = getArray(values);
   // call extremaXY version
-  var res = extremaXY(xVector, yVector, tolerance);
-  res.minlist = res.minlist.map(function(val) {
-    var index = Math.floor((val[1] + val[0]) / 2);
-    return Object.keys(values)[index];
-  });
-  res.maxlist = res.maxlist.map(function(val) {
-    var index = Math.floor((val[1] + val[0]) / 2);
-    return Object.keys(values)[index];
-  });
-
-  return {minlist: res.minlist, maxlist: res.maxlist};
+  const res = extremaXY(xArray, yArray, yTolerance);
+  // find interval centers
+  const centerKey = ([intervalStart, intervalEnd]) => (
+    valuesKeys[Math.floor((intervalStart + intervalEnd) * 0.5)]
+  );
+  res.minima = res.minima.map(centerKey);
+  res.maxima = res.maxima.map(centerKey);
+  return res;
 }
 
 /**
@@ -204,80 +205,145 @@ export function extrema(values, tolerance) {
  * [values] as input and returns intervals that contain local minima
  * and local maxima. [x] elements can be of any type.
  *
+ * For every extreme point, return one x interval.
+ * The y values of the interval start and end
+ * *can* be significantly different from the extreme y value.
+ *
  * @author Balint Morvai <balint@morvai.de>
  * @license http://en.wikipedia.org/wiki/MIT_License MIT License
- * @param xVector
- * @param yVector
- * @param tolerance
- * @returns {minlist: Array, maxlist: Array}
+ * @param xArray
+ * @param yArray
+ * @param yTolerance
+ * @returns { minima: Array, maxima: Array }
  */
-export function extremaXY(xVector, yVector, tolerance = 0.1) {
-  xVector = getArray(xVector);
-  yVector = getArray(yVector);
-  if (xVector.length < 2) return { minlist: [], maxlist: [] };
+export function extremaXY(xArray, yArray, yTolerance = 0.1) {
+  xArray = getArray(xArray);
+  yArray = getArray(yArray);
+  // TODO better way to find start of x intervals (detect plateaus) (avoid looping back)
+  // TODO also return plateaus who are not min plateaus and not max plateaus
+  // TODO xArray is not used in this function, remove function parameter, return x indices
+  console.log(`extremaXY: xArray.length ${xArray.length} + yArray.length ${yArray.length}`);
+  if (xArray.length < 3) {
+    // we need at least three points to analyze extreme points:
+    // first derivation is zero and second derivation is nonzero
+    return { minima: [], maxima: [] };
+  }
   let lastSlope = 0; // -1: falling, +1: rising
-  // TODO 0: horizontal (plateau)
-  const maxlist = [];
-  const minlist = [];
-  let lastMin = yVector[0];
-  let lastMax = yVector[0];
-  let lastY = yVector[0];
-  let y = yVector[1];
+  const maxima = [];
+  const minima = [];
+  let lastMin = yArray[0];
+  let lastMax = yArray[0];
+  let lastY = yArray[0];
+  let x = xArray[1];
+  let y = yArray[1];
+  let i = 2; // next point
+  let plateauLength = 0;
 
   // init
-  if (y < (lastMax - tolerance)) {
+  if (y < (lastMax - yTolerance)) {
     // falling
     lastSlope = -1;
     lastMin = y;
   }
-  else if (y > (lastMin + tolerance)) {
+  else if (y > (lastMin + yTolerance)) {
     // rising
     lastSlope = 1;
     lastMax = y;
   }
+  else {
+    // plateau at start of array
+    // seek to end of plateau
+    for (; i < yArray.length; i++) {
+      y = yArray[i];
+      if (y < (lastMax - yTolerance)) {
+        // maximum plateau + falling
+        maxima.push([xArray[0], xArray[i]]);
+        lastSlope = -1;
+        lastMin = y;
+        break;
+      }
+      else if (y > (lastMin + yTolerance)) {
+        // minimum plateau + rising
+        minima.push([xArray[0], xArray[i]]);
+        lastSlope = 1;
+        lastMax = y;
+        break;
+      }
+    }
+  }
 
-  for (let i = 2; i < yVector.length; i++) {
-    y = yVector[i];
+  for (; i < yArray.length; i++) {
+    x = xArray[i];
+    y = yArray[i];
+    //console.log(`extremaXY: i ${i} + x ${x} + y ${y} + lastSlope ${lastSlope} + lastMin ${lastMin} + lastMax ${lastMax}`);
     if (lastSlope == 1) {
       // was rising
-      if (y >= lastMax - tolerance) {
+      if (y >= lastMax - yTolerance) {
         // still rising
-        lastMax = y;
+        // detect high plateau
+        if (y < lastMax + yTolerance) {
+          // y is inside the tolerance bands
+          plateauLength++;
+        }
+        else {
+          plateauLength = 0;
+        }
+        lastMax = Math.max(lastMax, y); // y can be smaller than lastMax
       }
       else {
         // stopped rising
-        maxlist.push( [xVector[i - 1], xVector[i]] );
+        plateauLength = 0;
         // find x interval of last maximum
         let iStart = i - 1;
-        while (yVector[iStart] >= lastMax - tolerance) {
+        while (yArray[iStart] >= lastMax - yTolerance) {
           iStart--;
         }
-        maxlist.push([xVector[iStart], xVector[i]]);
-        // falling
-        lastSlope = -1;
+        maxima.push([xArray[iStart], xArray[i]]);
+        // (plateau or) falling
+        lastSlope = -1; // change
         lastMin = y;
       }
     }
     else if (lastSlope == -1) {
       // was falling
-      if(y <= lastMin + tolerance) {
+      if(y <= lastMin + yTolerance) {
         // still falling
-        lastMin = y;
+        // detect low plateau
+        if (y > lastMin - yTolerance) {
+          // y is inside the tolerance bands
+          plateauLength++;
+        }
+        else {
+          plateauLength = 0;
+        }
+        lastMin = Math.min(lastMin, y); // y can be bigger than lastMin
       }
       else {
         // stopped falling
+        plateauLength = 0;
         // find x interval of last minimum
         let iStart = i - 1;
-        while (yVector[iStart] <= lastMin + tolerance) {
+        while (yArray[iStart] <= lastMin + yTolerance) {
           iStart--;
         }
-        minlist.push([xVector[iStart], xVector[i]]);
+        minima.push([xArray[iStart], xArray[i]]);
         // rising
-        lastSlope = 1;
+        lastSlope = 1; // change
         lastMax = y;
       }
     }
-    // else ? (plateau)
   }
-  return { minlist, maxlist };
+  // end of array
+  i--; // go back to last index
+  if (plateauLength > 2) {
+    // plateau at end of array
+    if (y > lastMax - yTolerance) {
+      // maximum plateau
+      maxima.push([xArray[i - plateauLength], xArray[i]]);
+    }
+    else {
+      minima.push([xArray[i - plateauLength], xArray[i]]);
+    }
+  }
+  return { minima, maxima };
 }
