@@ -1,6 +1,6 @@
 {
   "name": "diff-js",
-  "version": "0.0.28",
+  "version": "0.0.29",
   "description": "numeric differentiation and integration, find local minima and maxima",
   "author": "Balint Morvai <balint@morvai.de>",
   "license": "MIT",
@@ -15,6 +15,7 @@
     "jest": "*",
     "cross-env": "*"
   },
+  "comment-version": "version number equals commit count",
   "keywords": [
     "math",
     "mathematics",
