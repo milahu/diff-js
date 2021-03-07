@@ -26,10 +26,10 @@ import { getArray } from './shared.js';
  * @param options
  * @option yTolerance
  * @option minimizeIntervals
- * @option getX
- * @option getY
- * @option getLength
- * @returns { minima: Array, maxima: Array }
+ * @option getX, getY, getLength: getter functions for custom data format
+ * @option nonextrema: also return non-extreme intervals
+ * @returns { extrema: interval[], minima: interval[], maxima: interval[], nonextrema: interval[] }
+ * @type interval = [xStart, xEnd]
  */
 export function localExtrema(data, options) {
   const defaultOptions = {
@@ -38,6 +38,7 @@ export function localExtrema(data, options) {
     getX: (data, idx) => idx,
     getY: (data, idx) => data[idx],
     getLength: (data) => data.length,
+    nonextrema: true,
   };
   options = Object.assign(defaultOptions, options);
   const { yTolerance, minimizeIntervals } = options;
@@ -47,12 +48,14 @@ export function localExtrema(data, options) {
   const getX = (idx) => options.getX(data, idx);
   const getY = (idx) => options.getY(data, idx);
   const dataLength = getLength();
+  const lastIndex = dataLength - 1;
   if (dataLength < 3) {
     // we need at least three points to analyze extreme points:
     // first derivation is zero and second derivation is nonzero
     return { minima: [], maxima: [] };
   }
   let lastSlope; // -1: falling, +1: rising
+  const extrema = [];
   const maxima = [];
   const minima = [];
   let lastMin = getY(0);
@@ -62,6 +65,9 @@ export function localExtrema(data, options) {
   let y = getY(1);
   let i = 2; // next point
   let plateauLength = 0;
+
+  const addMaximum = (x, y) => (maxima.push([x, y]), extrema.push([x, y]));
+  const addMinimum = (x, y) => (minima.push([x, y]), extrema.push([x, y]));
 
   // init
   if (y < (lastMax - yTolerance)) {
@@ -82,10 +88,10 @@ export function localExtrema(data, options) {
       if (y < (lastMax - yTolerance)) {
         // maximum plateau + falling
         if (i > 1 && minimizeIntervals) {
-          maxima.push([getX(0), getX(i - 1)]);
+          addMaximum(getX(0), getX(i - 1));
         }
         else {
-          maxima.push([getX(0), getX(i)]);
+          addMaximum(getX(0), getX(i));
         }
         lastSlope = -1;
         lastMin = y;
@@ -94,10 +100,10 @@ export function localExtrema(data, options) {
       else if (y > (lastMin + yTolerance)) {
         // minimum plateau + rising
         if (i > 1 && minimizeIntervals) {
-          minima.push([getX(0), getX(i - 1)]);
+          addMinimum(getX(0), getX(i - 1));
         }
         else {
-          minima.push([getX(0), getX(i)]);
+          addMinimum(getX(0), getX(i));
         }
         lastSlope = 1;
         lastMax = y;
@@ -133,10 +139,10 @@ export function localExtrema(data, options) {
           iStart--;
         }
         if ((i - iStart) >= 2 && minimizeIntervals) {
-          maxima.push([getX(iStart + 1), getX(i - 1)]);
+          addMaximum(getX(iStart + 1), getX(i - 1));
         }
         else {
-          maxima.push([getX(iStart), getX(i)]);
+          addMaximum(getX(iStart), getX(i));
         }
         // (plateau or) falling
         lastSlope = -1; // change
@@ -166,10 +172,10 @@ export function localExtrema(data, options) {
           iStart--;
         }
         if ((i - iStart) >= 2 && minimizeIntervals) {
-          minima.push([getX(iStart + 1), getX(i - 1)]);
+          addMinimum(getX(iStart + 1), getX(i - 1));
         }
         else {
-          minima.push([getX(iStart), getX(i)]);
+          addMinimum(getX(iStart), getX(i));
         }
         // rising
         lastSlope = 1; // change
@@ -178,18 +184,52 @@ export function localExtrema(data, options) {
     }
   }
   // end of array
-  i--; // go back to last index
+  i = lastIndex;
   if (plateauLength > 2) {
     // plateau at end of array
     // plateauLength is already minimal, no need to minimize
     if (y > lastMax - yTolerance) {
       // maximum plateau
-      maxima.push([getX(i - plateauLength), getX(i)]);
+      addMaximum(getX(i - plateauLength), getX(i));
     }
     else {
       // minimum plateau
-      minima.push([getX(i - plateauLength), getX(i)]);
+      addMinimum(getX(i - plateauLength), getX(i));
     }
   }
-  return { minima, maxima };
+
+  const result = { extrema, minima, maxima };
+
+  if (options.nonextrema) {
+    // find complementary intervals, where data is not extreme
+    // use the same interval delimiters as in the extrema array (xStart, xEnd)
+    const nonextrema = [];
+    if (extrema.length == 0) {
+      // all values are non-extreme
+      nonextrema.push([getX(0), getX(lastIndex)]);
+    }
+    else {
+      var a = getX(0);
+      var b = extrema[0][0];
+      if (a != b) {
+        // data start is no plateau
+        nonextrema.push([a, b]);
+      }
+      for (let i = 0; i < extrema.length - 1; i++) {
+        nonextrema.push([
+          extrema[i][1],
+          extrema[i + 1][0]
+        ]);
+      }
+      var a = extrema[extrema.length - 1][1];
+      var b = getX(lastIndex);
+      if (a != b) {
+        // data end is no plateau
+        nonextrema.push([a, b]);
+      }
+    }
+    result.nonextrema = nonextrema;
+  }
+
+  return result;
 }

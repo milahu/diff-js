@@ -1,6 +1,6 @@
 {
   "name": "diff-js",
-  "version": "0.0.29",
+  "version": "0.0.30",
   "description": "numeric differentiation and integration, find local minima and maxima",
   "author": "Balint Morvai <balint@morvai.de>",
   "license": "MIT",
@@ -12,8 +12,8 @@
     "commit-count": "git rev-list HEAD --count"
   },
   "devDependencies": {
-    "jest": "*",
-    "cross-env": "*"
+    "cross-env": "*",
+    "jest": "*"
   },
   "comment-version": "version number equals commit count",
   "keywords": [
@@ -40,7 +40,10 @@
     "local minima and maxima"
   ],
   "jest": {
-    "testMatch": ["<rootDir>/test/*.test.js"]
+    "rootDir": "test",
+    "testMatch": [
+      "<rootDir>/*.test.js"
+    ]
   },
   "repository": {
     "type": "git",
