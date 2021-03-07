@@ -1,0 +1,42 @@
+{
+  "name": "diff.js",
+  "version": "0.0.26",
+  "description": "numeric differentiation and integration, find local minima and maxima",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/balint42/diff.js.git"
+  },
+  "keywords": [
+    "math",
+    "mathematics",
+    "dataset",
+    "data array",
+    "data analysis",
+    "data science",
+    "signal analysis",
+    "numeric",
+    "differentiation",
+    "differentiate",
+    "numerical differentiation",
+    "numerical derivation",
+    "integration",
+    "integrate",
+    "numerical integration",
+    "extrema",
+    "extreme points",
+    "local extrema",
+    "local minima",
+    "local maxima",
+    "local minima and maxima"
+  ],
+  "author": "Balint Morvai <balint@morvai.de>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/balint42/diff.js/issues"
+  },
+  "homepage": "https://github.com/balint42/diff.js#readme"
+}
