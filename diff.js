@@ -207,7 +207,8 @@ export function extrema(values, yTolerance) {
  *
  * For every extreme point, return one x interval.
  * The y values of the interval start and end
- * *can* be significantly different from the extreme y value.
+ * *can* be significantly different from the extreme point's y value.
+ * This difference is minimized by the option `minimizeIntervals: true`.
  *
  * @author Balint Morvai <balint@morvai.de>
  * @license http://en.wikipedia.org/wiki/MIT_License MIT License
@@ -216,19 +217,21 @@ export function extrema(values, yTolerance) {
  * @param yTolerance
  * @returns { minima: Array, maxima: Array }
  */
-export function extremaXY(xArray, yArray, yTolerance = 0.1) {
+export function extremaXY(xArray, yArray, options) {
   xArray = getArray(xArray);
   yArray = getArray(yArray);
+  const defaultOptions = { yTolerance: 0.1, minimizeIntervals: true };
+  options = Object.assign(defaultOptions, options);
+  const { yTolerance, minimizeIntervals } = options;
   // TODO better way to find start of x intervals (detect plateaus) (avoid looping back)
   // TODO also return plateaus who are not min plateaus and not max plateaus
   // TODO xArray is not used in this function, remove function parameter, return x indices
-  console.log(`extremaXY: xArray.length ${xArray.length} + yArray.length ${yArray.length}`);
   if (xArray.length < 3) {
     // we need at least three points to analyze extreme points:
     // first derivation is zero and second derivation is nonzero
     return { minima: [], maxima: [] };
   }
-  let lastSlope = 0; // -1: falling, +1: rising
+  let lastSlope; // -1: falling, +1: rising
   const maxima = [];
   const minima = [];
   let lastMin = yArray[0];
@@ -257,14 +260,24 @@ export function extremaXY(xArray, yArray, yTolerance = 0.1) {
       y = yArray[i];
       if (y < (lastMax - yTolerance)) {
         // maximum plateau + falling
-        maxima.push([xArray[0], xArray[i]]);
+        if (i > 1 && minimizeIntervals) {
+          maxima.push([xArray[0], xArray[i - 1]]);
+        }
+        else {
+          maxima.push([xArray[0], xArray[i]]);
+        }
         lastSlope = -1;
         lastMin = y;
         break;
       }
       else if (y > (lastMin + yTolerance)) {
         // minimum plateau + rising
-        minima.push([xArray[0], xArray[i]]);
+        if (i > 1 && minimizeIntervals) {
+          minima.push([xArray[0], xArray[i - 1]]);
+        }
+        else {
+          minima.push([xArray[0], xArray[i]]);
+        }
         lastSlope = 1;
         lastMax = y;
         break;
@@ -298,7 +311,12 @@ export function extremaXY(xArray, yArray, yTolerance = 0.1) {
         while (yArray[iStart] >= lastMax - yTolerance) {
           iStart--;
         }
-        maxima.push([xArray[iStart], xArray[i]]);
+        if ((i - iStart) >= 2 && minimizeIntervals) {
+          maxima.push([xArray[iStart + 1], xArray[i - 1]]);
+        }
+        else {
+          maxima.push([xArray[iStart], xArray[i]]);
+        }
         // (plateau or) falling
         lastSlope = -1; // change
         lastMin = y;
@@ -326,7 +344,12 @@ export function extremaXY(xArray, yArray, yTolerance = 0.1) {
         while (yArray[iStart] <= lastMin + yTolerance) {
           iStart--;
         }
-        minima.push([xArray[iStart], xArray[i]]);
+        if ((i - iStart) >= 2 && minimizeIntervals) {
+          minima.push([xArray[iStart + 1], xArray[i - 1]]);
+        }
+        else {
+          minima.push([xArray[iStart], xArray[i]]);
+        }
         // rising
         lastSlope = 1; // change
         lastMax = y;
@@ -337,11 +360,13 @@ export function extremaXY(xArray, yArray, yTolerance = 0.1) {
   i--; // go back to last index
   if (plateauLength > 2) {
     // plateau at end of array
+    // plateauLength is already minimal, no need to minimize
     if (y > lastMax - yTolerance) {
       // maximum plateau
       maxima.push([xArray[i - plateauLength], xArray[i]]);
     }
     else {
+      // minimum plateau
       minima.push([xArray[i - plateauLength], xArray[i]]);
     }
   }
