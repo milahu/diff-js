@@ -185,7 +185,7 @@ export function localExtrema(data, options) {
   }
   // end of array
   i = lastIndex;
-  if (plateauLength > 2) {
+  if (plateauLength > 0) {
     // plateau at end of array
     // plateauLength is already minimal, no need to minimize
     if (y > lastMax - yTolerance) {
