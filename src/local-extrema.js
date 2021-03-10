@@ -67,8 +67,8 @@ export function localExtrema(data, options) {
   let i = 2; // next point
   let plateauLength = 0;
 
-  const addMaximum = (a, b) => (maxima.push([a, b]), extrema.push([a, b]));
-  const addMinimum = (a, b) => (minima.push([a, b]), extrema.push([a, b]));
+  const addMaximum = (...ab) => (maxima.push(ab), extrema.push(ab));
+  const addMinimum = (...ab) => (minima.push(ab), extrema.push(ab));
 
   // init
   if (thisY < (lastMax - yTolerance)) {
