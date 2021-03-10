@@ -1,6 +1,6 @@
 {
   "name": "diff-js",
-  "version": "0.0.32",
+  "version": "0.0.33",
   "description": "numeric differentiation and integration, find local minima and maxima in arrays of numbers",
   "author": "Balint Morvai <balint@morvai.de>",
   "license": "MIT",

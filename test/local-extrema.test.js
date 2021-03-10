@@ -117,9 +117,9 @@ test('supports custom data format 1', t => {
     values,
   };
   const options = {
-    getX: (data, idx) => data.keys[idx],
-    getY: (data, idx) => data.values[idx],
-    getLength: (data) => data.values.length,
+    y: (data, idx) => data.values[idx],
+    result: (data, idx) => data.keys[idx],
+    length: (data) => data.values.length,
   };
   localExtremaTest(t, data, options, { minima });
 });
@@ -133,9 +133,9 @@ test('supports custom data format 2', t => {
     values,
   ];
   const options = {
-    getX: (data, idx) => data[0][idx],
-    getY: (data, idx) => data[1][idx],
-    getLength: (data) => data[1].length,
+    y: (data, idx) => data[1][idx],
+    result: (data, idx) => data[0][idx],
+    length: (data) => data[1].length,
   };
   localExtremaTest(t, data, options, { minima });
 });
@@ -146,9 +146,9 @@ test('supports custom data format 3', t => {
   const minima = [[2, 3]];
   const data = values.map((val, idx) => [idx, val]);
   const options = {
-    getX: (data, idx) => data[idx][0],
-    getY: (data, idx) => data[idx][1],
-    getLength: (data) => data.length,
+    y: (data, idx) => data[idx][1],
+    result: (data, idx) => data[idx][0],
+    length: (data) => data.length,
   };
   localExtremaTest(t, data, options, { minima });
 });
