@@ -1,19 +1,19 @@
 {
   "name": "diff-js",
-  "version": "0.0.30",
-  "description": "numeric differentiation and integration, find local minima and maxima",
+  "version": "0.0.31",
+  "description": "numeric differentiation and integration, find local minima and maxima in arrays of numbers",
   "author": "Balint Morvai <balint@morvai.de>",
   "license": "MIT",
   "main": "src/index.js",
   "type": "module",
   "homepage": "https://github.com/milahu/diff-js",
   "scripts": {
-    "test": "cross-env NODE_OPTIONS='--experimental-vm-modules' jest",
+    "test": "cross-env NODE_OPTIONS='--experimental-vm-modules' node test/index.js",
     "commit-count": "git rev-list HEAD --count"
   },
   "devDependencies": {
     "cross-env": "*",
-    "jest": "*"
+    "zora": "*"
   },
   "comment-version": "version number equals commit count",
   "keywords": [
@@ -39,12 +39,6 @@
     "local maxima",
     "local minima and maxima"
   ],
-  "jest": {
-    "rootDir": "test",
-    "testMatch": [
-      "<rootDir>/*.test.js"
-    ]
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/milahu/diff-js.git"

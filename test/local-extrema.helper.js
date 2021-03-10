@@ -1,6 +1,6 @@
-import * as diffJS from '../';
+import * as diffJS from '../src/index.js';
 
-export function localExtremaTest(data, options = {}, expectedResult) {
+export function localExtremaTest(t, data, options = {}, expectedResult) {
 
   const defaultOptions = {
     getX: (data, idx) => idx,
@@ -56,5 +56,6 @@ export function localExtremaTest(data, options = {}, expectedResult) {
 
   const actualResult = diffJS.localExtrema(data, options);
 
-  expect(actualResult).toMatchObject(expectedResult);
+  t.equal(actualResult, expectedResult);
+
 }
