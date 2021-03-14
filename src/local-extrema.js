@@ -13,7 +13,6 @@ import { getArray } from './shared.js';
  * For every extreme point, return one x interval.
  * The y values of the interval start and end
  * *can* be significantly different from the extreme point's y value.
- * This difference is minimized by the option `minimizeIntervals: true`.
  *
  * yTolerance depends on the data fluctuations:
  * smaller values mean greater reliability in finding extrema
@@ -25,7 +24,6 @@ import { getArray } from './shared.js';
  * @param data
  * @param options
  * @option yTolerance
- * @option minimizeIntervals
  * @option result, y, getLength: getter functions for custom data format
  * @option nonextrema: also return non-extreme intervals
  * @returns { extrema: interval[], minima: interval[], maxima: interval[], nonextrema: interval[] }
@@ -39,7 +37,6 @@ export function localExtrema(data, options) {
 
   const defaultOptions = {
     yTolerance: 0.1,
-    minimizeIntervals: true,
     y: (data, idx) => data[idx],
     result: (data, idx) => idx,
     length: (data) => data.length,
@@ -52,7 +49,7 @@ export function localExtrema(data, options) {
     // first derivation is zero and second derivation is nonzero
     return { extrema: [], maxima: [], minima: [], plateaus: [], nonextrema: [] };
   }
-  const { yTolerance, minimizeIntervals } = options;
+  const { yTolerance } = options;
   const result = (idx) => options.result(data, idx);
   const y = (idx) => options.y(data, idx);
   const lastIndex = dataLength - 1;
@@ -95,7 +92,7 @@ export function localExtrema(data, options) {
       //console.log(`localExtrema: i ${i} + y ${thisY} + lastSlope ${lastSlope == 1 ? '+1' : lastSlope} + lastMin ${lastMin} + lastMax ${lastMax}`);
       if (thisY < (lastMax - yTolerance)) {
         // maximum plateau + falling
-        if (i > 1 && minimizeIntervals) {
+        if (i > 1) {
           addMaximum(result(0), result(i - 1));
         }
         else {
@@ -107,7 +104,7 @@ export function localExtrema(data, options) {
       }
       else if (thisY > (lastMin + yTolerance)) {
         // minimum plateau + rising
-        if (i > 1 && minimizeIntervals) {
+        if (i > 1) {
           addMinimum(result(0), result(i - 1));
         }
         else {
@@ -152,18 +149,19 @@ export function localExtrema(data, options) {
         while (y(iStart) >= lastMax - yTolerance) {
           iStart--;
         }
-        if ((i - iStart) >= 2 && minimizeIntervals) {
+        if ((i - iStart) >= 2) {
           addMaximum(result(iStart + 1), result(i - 1));
         }
         else {
           addMaximum(result(iStart), result(i));
         }
         // (plateau or) falling
-        lastSlope = -1; // change
+        lastSlope = -1;
         lastMin = thisY;
       }
     }
-    else if (lastSlope == -1) {
+    //else if (lastSlope == -1) {
+    else {
       // was falling
       if(thisY <= lastMin + yTolerance) {
         // still falling
@@ -189,18 +187,17 @@ export function localExtrema(data, options) {
         while (y(iStart) <= lastMin + yTolerance) {
           iStart--;
         }
-        if ((i - iStart) >= 2 && minimizeIntervals) {
+        if ((i - iStart) >= 2) {
           addMinimum(result(iStart + 1), result(i - 1));
         }
         else {
           addMinimum(result(iStart), result(i));
         }
-        // rising
-        lastSlope = 1; // change
+        // (plateau or) rising
+        lastSlope = 1;
         lastMax = thisY;
       }
     }
-    // else?
   }
   //console.log(`localExtrema: done middle of array`);
 
